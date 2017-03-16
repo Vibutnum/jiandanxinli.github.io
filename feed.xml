@@ -5,16 +5,1015 @@
   <id>https://jiandanxinli.github.io/</id>
   <link href="https://jiandanxinli.github.io/"/>
   <link href="https://jiandanxinli.github.io/feed.xml" rel="self"/>
-  <updated>2016-10-30T08:00:00+08:00</updated>
+  <updated>2017-01-17T08:00:00+08:00</updated>
   <author>
     <name>北京竹间科技有限公司</name>
   </author>
+  <entry>
+    <title>Turbolinks 介绍及使用技巧 · Turbolinks Part 1</title>
+    <link rel="alternate" href="https://jiandanxinli.github.io/2017-01-17.html"/>
+    <id>https://jiandanxinli.github.io/2017-01-17.html</id>
+    <published>2017-01-17T08:00:00+08:00</published>
+    <updated>2017-01-17T16:35:19+08:00</updated>
+    <author>
+      <name>Ben</name>
+    </author>
+    <content type="html">&lt;p&gt;Turbolinks 是源自 Ruby on Rails 的 Web 加载优化方案。简单来说就是当用户点击链接时，并不真实的跳转网页，而是通过 ajax 读取目标页的内容，然后替换当前页。这种方式有以下优点：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;避免 Javascript 和 CSS 的重新加载&lt;/li&gt;
+&lt;li&gt;减少网页的重新渲染的工作量&lt;/li&gt;
+&lt;li&gt;对搜索引擎友好&lt;/li&gt;
+&lt;li&gt;无须后端改动&lt;/li&gt;
+&lt;li&gt;支持 App 端（有 Android 和 iOS SDK）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;以上是功能性的优点，除此之外，这种传统的“页面”形式的交互，也能让用户更易于理解（虽然现在更流行应用式的交互，但这对设计师的要求更高，设计的不好很容易让用户迷路）。&lt;/p&gt;
+
+&lt;h2&gt;安装 Turbolinks&lt;/h2&gt;
+
+&lt;p&gt;见 &lt;a href="https://github.com/turbolinks/turbolinks"&gt;https://github.com/turbolinks/turbolinks&lt;/a&gt; ，我这里就不重复文档的内容了。&lt;/p&gt;
+
+&lt;h2&gt;基本技巧&lt;/h2&gt;
+
+&lt;h3&gt;避免巨无霸型的 css 和 js 文件&lt;/h3&gt;
+
+&lt;p&gt;因为 Turbolinks 的加载机制，导致使用者倾向于把所有的样式和脚本打包成一个巨无霸型的 css 和 js，这会严重影响首次加载。Turbolinks 是完全支持不同页面加载不同的 css 和 js。&lt;/p&gt;
+
+&lt;p&gt;简单心理的项目中，采用了如下方式来自动判断和加载当前页面所需的样式和脚本：&lt;/p&gt;
+&lt;pre class="highlight slim"&gt;&lt;code&gt;&lt;span class="c"&gt;/ 加载样式文件，如 pages#home 的 css 文件，存放在 app/assets/stylesheets/www/pages/home.sass&lt;/span&gt;
+&lt;span class="p"&gt;-&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="no"&gt;File&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;exist?&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="no"&gt;Rails&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;root&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"app/assets/stylesheets/&lt;/span&gt;&lt;span class="si"&gt;#{&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;subdomain&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'.'&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;/&lt;/span&gt;&lt;span class="si"&gt;#{&lt;/span&gt;&lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:controller&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;/&lt;/span&gt;&lt;span class="si"&gt;#{&lt;/span&gt;&lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:action&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;.sass"&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+  &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="n"&gt;stylesheet_link_tag&lt;/span&gt; &lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="si"&gt;#{&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;subdomain&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'.'&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;/&lt;/span&gt;&lt;span class="si"&gt;#{&lt;/span&gt;&lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:controller&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;/&lt;/span&gt;&lt;span class="si"&gt;#{&lt;/span&gt;&lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:action&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt;
+
+&lt;span class="c"&gt;/ 加载脚本文件，如 pages#home 的 js 文件，存放在 app/assets/javascripts/www/pages/home.coffee&lt;/span&gt;
+&lt;span class="p"&gt;-&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="no"&gt;File&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;exist?&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="no"&gt;Rails&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;root&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;join&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"app/assets/javascripts/&lt;/span&gt;&lt;span class="si"&gt;#{&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;subdomain&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'.'&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;/&lt;/span&gt;&lt;span class="si"&gt;#{&lt;/span&gt;&lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:controller&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;/&lt;/span&gt;&lt;span class="si"&gt;#{&lt;/span&gt;&lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:action&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;.coffee"&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+  &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="n"&gt;javascript_include_tag&lt;/span&gt; &lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="si"&gt;#{&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;subdomain&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'.'&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;/&lt;/span&gt;&lt;span class="si"&gt;#{&lt;/span&gt;&lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:controller&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;/&lt;/span&gt;&lt;span class="si"&gt;#{&lt;/span&gt;&lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="ss"&gt;:action&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;简化页面加载事件&lt;/h3&gt;
+
+&lt;p&gt;因为 Turbolinks 的特殊加载机制，我们经常需要手动注册和注销事件。在简单心理，我们通过以下方式来简化这部分的代码：&lt;/p&gt;
+&lt;pre class="highlight coffeescript"&gt;&lt;code&gt;  &lt;span class="nx"&gt;_page_loaded&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+  &lt;span class="nx"&gt;_page_unload&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+  &lt;span class="nx"&gt;_page_unload_once&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+
+  &lt;span class="c1"&gt;# 网页加载时执行&lt;/span&gt;
+  &lt;span class="nb"&gt;window&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;$loaded&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;func&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+    &lt;span class="nx"&gt;_page_loaded&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;push&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;func&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+  &lt;span class="c1"&gt;# 离开网页时执行&lt;/span&gt;
+  &lt;span class="nb"&gt;window&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;$unload&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;func&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+    &lt;span class="nx"&gt;_page_unload&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;push&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;func&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+  &lt;span class="c1"&gt;# 离开网页时执行，且执行一次&lt;/span&gt;
+  &lt;span class="nb"&gt;window&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;$unload_once&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;func&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+    &lt;span class="nx"&gt;_page_unload_once&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;push&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;func&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+  &lt;span class="c1"&gt;# 下面代码是以上接口的实现&lt;/span&gt;
+
+  &lt;span class="nb"&gt;window&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;addEventListener&lt;/span&gt; &lt;span class="s"&gt;'turbolinks:load'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+    &lt;span class="nx"&gt;func&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;func&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="nx"&gt;_page_loaded&lt;/span&gt;
+
+  &lt;span class="nb"&gt;window&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;addEventListener&lt;/span&gt; &lt;span class="s"&gt;'turbolinks:before-visit'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+    &lt;span class="nx"&gt;func&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;func&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="nx"&gt;_page_unload_once&lt;/span&gt;
+    &lt;span class="nx"&gt;_page_unload_once&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+    &lt;span class="nx"&gt;func&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;func&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="nx"&gt;_page_unload&lt;/span&gt;
+
+  &lt;span class="nb"&gt;window&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;addEventListener&lt;/span&gt; &lt;span class="s"&gt;'beforeunload'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+    &lt;span class="nx"&gt;func&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;func&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="nx"&gt;_page_unload_once&lt;/span&gt;
+    &lt;span class="nx"&gt;_page_unload_once&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+    &lt;span class="nx"&gt;func&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;func&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="nx"&gt;_page_unload&lt;/span&gt;
+
+    &lt;span class="no"&gt;null&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;兼容 Vue.js 1.x&lt;/h3&gt;
+
+&lt;p&gt;当一个页面的交互越来越复杂时，就需要用如 Vue.js 之类的框架，来简化交互的代码，但 Turbolinks 在缓存页面时，不会缓存 dom 里绑定的 events。当用户返回一个使用了 Vue 组件的页面时，这些组件的交互就都无法失效了。&lt;/p&gt;
+
+&lt;p&gt;我们的解决思路是在页面离开时，缓存 Vue 组件的数据，并注销组件。当返回时，再重新渲染组件，并注入之前缓存的数据。&lt;/p&gt;
+
+&lt;p&gt;另外要注意的是，Turbolinks 也会记住当前页面的滚动位置，记录在 &lt;code&gt;Turbolinks.controller.getCurrentRestorationData().scrollPosition&lt;/code&gt; 中，因此如果你的组件是一个长长的列表，且是异步加载的话，需要在加载前，先手动缓存这个位置（因为页面返回后，Turbolinks 会自动刷新记录值），待列表数据加载和渲染完成后，再将页面滚动到缓存的位置。&lt;/p&gt;
+
+&lt;p&gt;具体实现如下：（因为我们现在不再继续使用 Vue.js，因此只给出 1.x 版本的实现方案）&lt;/p&gt;
+&lt;pre class="highlight coffeescript"&gt;&lt;code&gt;&lt;span class="nx"&gt;vm_caches&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+
+&lt;span class="nx"&gt;cache_data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;props&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+  &lt;span class="nx"&gt;cache&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+  &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt; &lt;span class="k"&gt;of&lt;/span&gt; &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;extend&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;props&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="k"&gt;typeof&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;'raw'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;isnt&lt;/span&gt; &lt;span class="s"&gt;'undefined'&lt;/span&gt;
+      &lt;span class="k"&gt;continue&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;raw&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;raw&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;indexOf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'$data'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;is&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+      &lt;span class="k"&gt;try&lt;/span&gt;
+        &lt;span class="nx"&gt;cache&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;k&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;eval&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;v&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;raw&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="k"&gt;catch&lt;/span&gt; &lt;span class="nx"&gt;error&lt;/span&gt;
+        &lt;span class="nx"&gt;cache&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;k&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;raw&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;
+      &lt;span class="nx"&gt;cache&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;k&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt;
+  &lt;span class="nx"&gt;cache&lt;/span&gt;
+
+&lt;span class="nx"&gt;cache_vm&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;parent&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;cache&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+  &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;child&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="nx"&gt;parent&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;$children&lt;/span&gt;
+    &lt;span class="k"&gt;continue&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="k"&gt;typeof&lt;/span&gt; &lt;span class="nx"&gt;child&lt;/span&gt; &lt;span class="o"&gt;is&lt;/span&gt; &lt;span class="s"&gt;'undefined'&lt;/span&gt;
+    &lt;span class="nx"&gt;cache&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;child&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;constructor&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;name&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;cache_data&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;child&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;_data&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;child&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;_props&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nx"&gt;cache_vm&lt;/span&gt; &lt;span class="nx"&gt;child&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;cache&lt;/span&gt;
+
+&lt;span class="nx"&gt;$loaded&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+  &lt;span class="nb"&gt;window&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;vm&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nx"&gt;Vue&lt;/span&gt;
+    &lt;span class="na"&gt;el&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s"&gt;'body'&lt;/span&gt;
+
+&lt;span class="nb"&gt;window&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;addEventListener&lt;/span&gt; &lt;span class="s"&gt;'turbolinks:before-cache'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+  &lt;span class="nx"&gt;list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+  &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="nx"&gt;vm&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;$children&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;length&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+    &lt;span class="nx"&gt;child&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;vm&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;$children&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nx"&gt;id&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="c1"&gt;# $.id 是一个生成唯一 ID 的函数，大家可以自行实现&lt;/span&gt;
+    &lt;span class="nx"&gt;vm_caches&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;id&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;
+      &lt;span class="na"&gt;data&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nx"&gt;cache_data&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;child&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;_data&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;child&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;_props&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="na"&gt;children&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+    &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;child&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;$el&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="na"&gt;after&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;child&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;$options&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;el&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;outerHTML&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;replace&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'&amp;gt;&amp;lt;'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;" _cache_key=&lt;/span&gt;&lt;span class="se"&gt;\"&lt;/span&gt;&lt;span class="si"&gt;#{&lt;/span&gt;&lt;span class="nx"&gt;id&lt;/span&gt;&lt;span class="si"&gt;}&lt;/span&gt;&lt;span class="se"&gt;\"&lt;/span&gt;&lt;span class="s"&gt;&amp;gt;&amp;lt;"&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="nx"&gt;cache_vm&lt;/span&gt; &lt;span class="nx"&gt;child&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;vm_caches&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;id&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="na"&gt;children&lt;/span&gt;
+    &lt;span class="nx"&gt;child&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;$destroy&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="no"&gt;true&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="nx"&gt;Vue&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;define&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;id&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;options&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;options&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;'props'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nx"&gt;options&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;props&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;push&lt;/span&gt; &lt;span class="s"&gt;'_cache_key'&lt;/span&gt;
+  &lt;span class="k"&gt;else&lt;/span&gt;
+    &lt;span class="nx"&gt;options&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;props&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;options&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;'ready'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nx"&gt;originalReady&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;options&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;ready&lt;/span&gt;
+    &lt;span class="nx"&gt;options&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;ready&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+      &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;vm_caches&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="vi"&gt;@&lt;/span&gt;&lt;span class="na"&gt;$parent&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;_cache_key&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt; &lt;span class="k"&gt;of&lt;/span&gt; &lt;span class="nx"&gt;vm_caches&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="vi"&gt;@&lt;/span&gt;&lt;span class="na"&gt;$parent&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;_cache_key&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="na"&gt;children&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="vi"&gt;@&lt;/span&gt;&lt;span class="na"&gt;constructor&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;name&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+          &lt;span class="nx"&gt;Vue&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;set&lt;/span&gt; &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt;
+      &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;vm_caches&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="vi"&gt;@&lt;/span&gt;&lt;span class="na"&gt;_cache_key&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt; &lt;span class="k"&gt;of&lt;/span&gt; &lt;span class="nx"&gt;vm_caches&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="vi"&gt;@&lt;/span&gt;&lt;span class="na"&gt;_cache_key&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="na"&gt;data&lt;/span&gt;
+          &lt;span class="nx"&gt;Vue&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;set&lt;/span&gt; &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt;
+      &lt;span class="nx"&gt;originalReady&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;call&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="k"&gt;else&lt;/span&gt;
+    &lt;span class="nx"&gt;options&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;ready&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+      &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vi"&gt;@&lt;/span&gt;&lt;span class="na"&gt;_cache_key&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt; &lt;span class="k"&gt;of&lt;/span&gt; &lt;span class="nx"&gt;vm_caches&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="vi"&gt;@&lt;/span&gt;&lt;span class="na"&gt;_cache_key&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+          &lt;span class="nx"&gt;Vue&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;set&lt;/span&gt; &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;k&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;v&lt;/span&gt;
+
+  &lt;span class="nx"&gt;Vue&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;component&lt;/span&gt; &lt;span class="nx"&gt;id&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;options&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;如果你有更多技巧，欢迎交流分享。&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>Turbolinks-iOS 上路实用手册 · Turbolinks Part 3</title>
+    <link rel="alternate" href="https://jiandanxinli.github.io/2016-11-16.html"/>
+    <id>https://jiandanxinli.github.io/2016-11-16.html</id>
+    <published>2016-11-16T08:00:00+08:00</published>
+    <updated>2016-11-16T10:23:41+08:00</updated>
+    <author>
+      <name>fengd</name>
+    </author>
+    <content type="html">&lt;p&gt;PS. Turbolinks 系列的 Part 1、2、4 还在编写中，敬请期待 :P&lt;/p&gt;
+
+&lt;h3&gt;前提&lt;/h3&gt;
+
+&lt;p&gt;要用 turbolinks-iOS 来写一个 Hybrid 的 App 的前提是你的网站使用了 &lt;a href="https://github.com/turbolinks/turbolinks"&gt;turbolinks&lt;/a&gt;， 如何使用 turbolinks, 请看&lt;a href="https://github.com/turbolinks/turbolinks"&gt;这里&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3&gt;安装&lt;/h3&gt;
+
+&lt;p&gt;通过 Cocoapods 或者 Carthage 安装，都是直接引用了 github 上的地址。&lt;/p&gt;
+&lt;pre class="highlight ruby"&gt;&lt;code&gt;&lt;span class="n"&gt;github&lt;/span&gt; &lt;span class="s2"&gt;"turbolinks/turbolinks-ios"&lt;/span&gt; &lt;span class="s2"&gt;"3.0"&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;或者&lt;/p&gt;
+&lt;pre class="highlight ruby"&gt;&lt;code&gt;&lt;span class="n"&gt;pod&lt;/span&gt; &lt;span class="s1"&gt;'Turbolinks'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ss"&gt;:git&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s1"&gt;'https://github.com/turbolinks/turbolinks-ios.git'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ss"&gt;branch: &lt;/span&gt;&lt;span class="s1"&gt;'swift-3.0'&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;turbolinks-iOS 是使用纯 swift 写的，支持 iOS 8.0 以上的版本。如果项目已经使用了 swift 3.0， 需要使用 3.0 的分支。虽然官方官方说 3.0的分支他们没有在生产环境下用过，但是我们用下来没有什么问题。&lt;/p&gt;
+
+&lt;h3&gt;使用&lt;/h3&gt;
+
+&lt;p&gt;首先建议把 turbolinks-iOS 的代码都下载下来，先跑一下他的demo，demo 虽然很简单，但是基本上把能碰到的情况都写上去了，比如网页请求失败，遇到需要登录的情况等。&lt;/p&gt;
+
+&lt;h4&gt;创建Session&lt;/h4&gt;
+
+&lt;p&gt;使用 turbolinks-iOS，最重要的一个概念就是 session， session 控制着网页的前进和返回，也是网页和原生代码之间交互的通道。创建 session, 设置 delegate， 同时设置好 processPool。 如果你有多个 session, 并且想要在多个 session 之间共享 cookies，那就需要创建一个共享的 pool，比如通过 singleton 的方式。&lt;/p&gt;
+&lt;pre class="highlight swift"&gt;&lt;code&gt;&lt;span class="kd"&gt;fileprivate&lt;/span&gt; &lt;span class="kd"&gt;lazy&lt;/span&gt; &lt;span class="k"&gt;var&lt;/span&gt; &lt;span class="nv"&gt;webViewConfiguration&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;WKWebViewConfiguration&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="nv"&gt;configuration&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kt"&gt;WKWebViewConfiguration&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;configuration&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;userContentController&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;"turbolinksDemo"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;configuration&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;processPool&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;webViewProcessPool&lt;/span&gt;
+    &lt;span class="n"&gt;configuration&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;applicationNameForUserAgent&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;"TurbolinksDemo"&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;configuration&lt;/span&gt;
+&lt;span class="p"&gt;}()&lt;/span&gt;
+
+&lt;span class="kd"&gt;fileprivate&lt;/span&gt; &lt;span class="kd"&gt;lazy&lt;/span&gt; &lt;span class="k"&gt;var&lt;/span&gt; &lt;span class="nv"&gt;session&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;Session&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="nv"&gt;session&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kt"&gt;Session&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;webViewConfiguration&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="k"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;webViewConfiguration&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;delegate&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;self&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;
+&lt;span class="p"&gt;}()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h4&gt;实现 Delegate&lt;/h4&gt;
+
+&lt;p&gt;iOS 里适合做前进后退这件事最合适的就是 UINavigationController 了，因此通常会在 navigationController 中新建 session 实例，并把自身作为这个 session 的 delegate。作为 session 的 delegate，必须实现两个方法。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;func session(_ session: Session, didProposeVisitToURL URL: URL, withAction action: Action)&lt;/code&gt;, 网页上任何的访问新网页的事件，都会回调这个方法。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;pre class="highlight swift"&gt;&lt;code&gt;  &lt;span class="kd"&gt;func&lt;/span&gt; &lt;span class="nf"&gt;session&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;_&lt;/span&gt; &lt;span class="nv"&gt;session&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;Session&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;didProposeVisitToURL&lt;/span&gt; &lt;span class="kt"&gt;URL&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;URL&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;withAction&lt;/span&gt; &lt;span class="nv"&gt;action&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;Action&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="nv"&gt;visitable&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kt"&gt;JDXLVisitableViewController&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;url&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;URL&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;action&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="kt"&gt;Advance&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="nf"&gt;pushViewController&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;visitable&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;animated&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;action&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="kt"&gt;Replace&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;viewControllers&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;count&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;var&lt;/span&gt; &lt;span class="nv"&gt;controllers&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;viewControllers&lt;/span&gt;
+        &lt;span class="n"&gt;controllers&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;visitable&lt;/span&gt;
+        &lt;span class="nf"&gt;setViewControllers&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;controllers&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;animated&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nf"&gt;popViewController&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;animated&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="nf"&gt;pushViewController&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;visitable&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;animated&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="c1"&gt;// DO NOT FORGET TO CALL visit&lt;/span&gt;
+    &lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;visit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;visitable&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;代码很直观，每次访问一个新的URL时，都根据 action 值来判断是 push 进一个新的 viewcontroller, 还是替换当前的 viewcontroller。 替换也就是 pop 出当前的 controller，push 进新的。&lt;/p&gt;
+
+&lt;p&gt;在处理完 viewcontroller 之间的关系之后，还要调用 session.visit(visitable)，通知背后的 WKWebView 访问新的地址。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;func session(_ session: Session, didFailRequestForVisitable visitable: Visitable, withError error: NSError)&lt;/code&gt;
+这是当请求失败时，处理回调的函数。 比如服务器端返回 401， 可以弹出登陆界面。 网络不好，或者404时，可以显示自定义的错误页面。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;pre class="highlight swift"&gt;&lt;code&gt;&lt;span class="kd"&gt;func&lt;/span&gt; &lt;span class="nf"&gt;session&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;_&lt;/span&gt; &lt;span class="nv"&gt;session&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;Session&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;didFailRequestForVisitable&lt;/span&gt; &lt;span class="nv"&gt;visitable&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;Visitable&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;withError&lt;/span&gt; &lt;span class="nv"&gt;error&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;NSError&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;NSLog&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"ERROR: %@"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;error&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="k"&gt;guard&lt;/span&gt; &lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="nv"&gt;visitableViewController&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;visitable&lt;/span&gt; &lt;span class="k"&gt;as?&lt;/span&gt; &lt;span class="kt"&gt;JDXLVisitableViewController&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="nv"&gt;errorCode&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kt"&gt;ErrorCode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;rawValue&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;error&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;code&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="k"&gt;switch&lt;/span&gt; &lt;span class="n"&gt;errorCode&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nv"&gt;httpFailure&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="nv"&gt;statusCode&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;error&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;userInfo&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;"statusCode"&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="k"&gt;as!&lt;/span&gt; &lt;span class="kt"&gt;Int&lt;/span&gt;
+      &lt;span class="k"&gt;switch&lt;/span&gt; &lt;span class="n"&gt;statusCode&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+      &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="o"&gt;....&lt;/span&gt;
+        &lt;span class="c1"&gt;//do something&lt;/span&gt;
+      &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="mi"&gt;401&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+          &lt;span class="nf"&gt;presentAuthenticationViewController&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;visitable&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;visitableViewController&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="mi"&gt;404&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+          &lt;span class="n"&gt;visitableViewController&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;presentError&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;error&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="kt"&gt;HTTPNotFoundError&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="k"&gt;default&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+          &lt;span class="n"&gt;visitableViewController&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;presentError&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;error&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;TurbolinkError&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;HTTPStatusCode&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;statusCode&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+      &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nv"&gt;networkFailure&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="n"&gt;visitableViewController&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;presentError&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;error&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="kt"&gt;NetworkError&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h4&gt;处理 Form 提交&lt;/h4&gt;
+
+&lt;p&gt;Turbolinks 默认不接受标准的 HTML Form提交， &lt;a href="https://github.com/turbolinks/turbolinks-ios#handling-form-submission"&gt;原因如下&lt;/a&gt;:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;By default, Turbolinks for iOS prevents standard HTML form submissions. This is because a form submission often results in redirection to a different URL, which means the Visitable view controller’s URL would change in place.
+Instead, we recommend submitting forms with JavaScript using XMLHttpRequest, and using the response to tell Turbolinks where to navigate afterwards. See Redirecting After a Form Submission in the Turbolinks documentation for more details.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;官网的这句话就是我 pull request 的，^_^， 就不翻译了。 改用 Ajax 的方式提交 Form,  在返回的结果中， 调用 &lt;code&gt;Turbolinks.visit(some_url)&lt;/code&gt; 来指向新的页面。&lt;/p&gt;
+
+&lt;h3&gt;Turbolinks 和 Turbolinks-iOS 是如何通信的&lt;/h3&gt;
+
+&lt;p&gt;Turbolinks-iOS 使用的 WKWebView 如何捕获网页上的页面访问事件，比如点击一个 a 标签 ? 通过 WKUserScript。&lt;/p&gt;
+
+&lt;p&gt;当 webview 加载的页面 &amp;#39;document ready&amp;#39; 时， Turbolinks-iOS 通过 WKUserScript 加载一个定制的 JS 文件.&lt;/p&gt;
+&lt;pre class="highlight swift"&gt;&lt;code&gt;&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="nv"&gt;bundle&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kt"&gt;Bundle&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;for&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nf"&gt;type&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;of&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="k"&gt;self&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="nv"&gt;source&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;try!&lt;/span&gt; &lt;span class="kt"&gt;String&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;contentsOf&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;bundle&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;url&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;forResource&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;"WebView"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;withExtension&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;"js"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;encoding&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;String&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="kt"&gt;Encoding&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;utf8&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="nv"&gt;userScript&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kt"&gt;WKUserScript&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;source&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;source&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;injectionTime&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;atDocumentEnd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;forMainFrameOnly&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;configuration&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;userContentController&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;addUserScript&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;userScript&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;configuration&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;userContentController&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s"&gt;"turbolinks"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;这个JS文件做了什么？ 他把自己作为一个 adapter 绑定到 Turbolinks 上了。&lt;/p&gt;
+&lt;pre class="highlight javascript"&gt;&lt;code&gt;&lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;WebView&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;controller&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;messageHandler&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;controller&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;controller&lt;/span&gt;
+  &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;messageHandler&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;messageHandler&lt;/span&gt;
+  &lt;span class="nx"&gt;controller&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;adapter&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;this&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="c1"&gt;//init&lt;/span&gt;
+&lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;webView&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nx"&gt;WebView&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;Turbolinks&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;controller&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;webkit&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;messageHandlers&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;turbolinks&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;因为网页是基于Turbolinks，因此网页上有任何&amp;quot;风吹草动&amp;quot;都会通过 controller，传到这个 adapter 上来。比如，访问一个新的地址是:&lt;/p&gt;
+&lt;pre class="highlight coffeescript"&gt;&lt;code&gt;&lt;span class="na"&gt;visit&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;location&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;options&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{})&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;
+  &lt;span class="nx"&gt;location&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;Turbolinks&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;Location&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;wrap&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;location&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vi"&gt;@&lt;/span&gt;&lt;span class="na"&gt;applicationAllowsVisitingLocation&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;location&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="vi"&gt;@&lt;/span&gt;&lt;span class="na"&gt;locationIsVisitable&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;location&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="nx"&gt;action&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;options&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;action&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt; &lt;span class="s"&gt;"advance"&lt;/span&gt;
+      &lt;span class="vi"&gt;@&lt;/span&gt;&lt;span class="na"&gt;adapter&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;visitProposedToLocationWithAction&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;location&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;action&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;
+      &lt;span class="nb"&gt;window&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="na"&gt;location&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;location&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;而 adapter 在通过 webkit.messageHandlers 把消息传递给 iOS，比如: &lt;code&gt;visitRequestStarted&lt;/code&gt;&lt;/p&gt;
+&lt;pre class="highlight javascript"&gt;&lt;code&gt;&lt;span class="nx"&gt;visitProposedToLocationWithAction&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;location&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;action&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;postMessage&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"visitProposed"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="na"&gt;location&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nx"&gt;location&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;absoluteURL&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="na"&gt;action&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nx"&gt;action&lt;/span&gt; &lt;span class="p"&gt;})&lt;/span&gt;
+&lt;span class="p"&gt;},&lt;/span&gt;
+
+&lt;span class="nx"&gt;postMessage&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;messageHandler&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;postMessage&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt; &lt;span class="na"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="na"&gt;data&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="nx"&gt;data&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt; &lt;span class="p"&gt;})&lt;/span&gt;
+&lt;span class="p"&gt;},&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;这个 messageHandler 就是 初始化传进来的 &lt;code&gt;webkit.messageHandlers.turbolinks&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;iOS 原生代码，再通过 WKScriptMessageHandler 捕获这些事件后,通过 VisitDelegate 和 SessionDelegate，&lt;/p&gt;
+&lt;pre class="highlight swift"&gt;&lt;code&gt;&lt;span class="kd"&gt;func&lt;/span&gt; &lt;span class="nf"&gt;userContentController&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;_&lt;/span&gt; &lt;span class="nv"&gt;userContentController&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;WKUserContentController&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;didReceive&lt;/span&gt; &lt;span class="nv"&gt;message&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;WKScriptMessage&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;guard&lt;/span&gt; &lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="nv"&gt;message&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kt"&gt;ScriptMessage&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;parse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="k"&gt;switch&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="c1"&gt;//....some codes....&lt;/span&gt;
+    &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="kt"&gt;VisitProposed&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;delegate&lt;/span&gt;&lt;span class="p"&gt;?&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;webView&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;didProposeVisitToLocation&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;location&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;withAction&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;action&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="c1"&gt;//....some other codes...&lt;/span&gt;
+    &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="kt"&gt;ErrorRaised&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;let&lt;/span&gt; &lt;span class="nv"&gt;error&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;"error"&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="k"&gt;as?&lt;/span&gt; &lt;span class="kt"&gt;String&lt;/span&gt;
+        &lt;span class="kt"&gt;NSLog&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"JavaScript error: %@"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;error&lt;/span&gt; &lt;span class="p"&gt;??&lt;/span&gt; &lt;span class="s"&gt;"&amp;lt;unknown error&amp;gt;"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;session 就是这里的这个delegate，并且在这个delegate的实现方法中&lt;/p&gt;
+&lt;pre class="highlight swift"&gt;&lt;code&gt;&lt;span class="kd"&gt;func&lt;/span&gt; &lt;span class="nf"&gt;webView&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;_&lt;/span&gt; &lt;span class="nv"&gt;webView&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;WebView&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;didProposeVisitToLocation&lt;/span&gt; &lt;span class="nv"&gt;location&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;URL&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;withAction&lt;/span&gt; &lt;span class="nv"&gt;action&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kt"&gt;Action&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="n"&gt;delegate&lt;/span&gt;&lt;span class="p"&gt;?&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="nf"&gt;session&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;didProposeVisitToURL&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;location&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;withAction&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;action&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;这就回到了最初实现的 SessionDelegate 了，就是我们的 UINavigationController&lt;/p&gt;
+
+&lt;h3&gt;视频介绍&lt;/h3&gt;
+
+&lt;p&gt;这是在2016年的 Rails Conference 上，Turbolinks 和 Turbolinks-iOS 主要贡献者 &lt;a href="https://github.com/sstephenson"&gt;Sam Stephenson&lt;/a&gt; 做的一个演讲，值得一看，&lt;a href="https://www.youtube.com/watch?v=SWEts0rlezA"&gt;Youtube 地址&lt;/a&gt;。&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>TextInput 详解 · Material Design Part 1</title>
+    <link rel="alternate" href="https://jiandanxinli.github.io/2016-11-14.html"/>
+    <id>https://jiandanxinli.github.io/2016-11-14.html</id>
+    <published>2016-11-14T08:00:00+08:00</published>
+    <updated>2016-11-14T11:43:16+08:00</updated>
+    <author>
+      <name>BugDev</name>
+    </author>
+    <content type="html">&lt;p&gt;这是一个系列文章，在这个系列里，我会按打造一个 Material Design App 的路线介绍所有应当掌握和值得掌握的系统组件。
+你会在这些文章里了解到这些组件的使用和内部实现原理，以及它们背后所反映的 Material Design 的设计思想，希望你会喜欢。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Tips&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;我的每一篇博客都会提供详尽的API介绍，如果你想快速查阅某个功能的API或如何实现，建议Ctrl+F（Commad+F）在本页面搜索关键字查找。&lt;/p&gt;
+
+&lt;p&gt;Thanks for reading~!&lt;/p&gt;
+
+&lt;h2&gt;目录&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;基本介绍&lt;/li&gt;
+&lt;li&gt;TextInputLayout详解&lt;/li&gt;
+&lt;li&gt;代码杂烩&lt;/li&gt;
+&lt;li&gt;登录页面实战&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2&gt;基本介绍&lt;/h2&gt;
+
+&lt;p&gt;文本输入框通常都有提示语，告知用户这里需要输入什么。提示语通常有两种形式，&lt;strong&gt;位于输入框内，输入文字后即消失&lt;/strong&gt; 或 &lt;strong&gt;固定浮于输入框上方或左侧&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;将提示置于输入框内能够节省空间，但有个致命的缺点就是容易导致用户失去上下文。想象一下，当我们有十个文本框需要输入的时候，如果无法始终看到提示语，很容易忘记这里该填入什么样的数据。&lt;/p&gt;
+
+&lt;p&gt;提示语固定于输入框上方或左侧，让人能够非常明确的知道这里该填入的内容，但在动画效果和焦点区分上却不是十分出色。&lt;/p&gt;
+
+&lt;p&gt;结合这两种类型的输入框优点，Material Design推出了一种优秀的文本输入框形式——&lt;strong&gt;当用户点击空内容的文本输入框时，原本位于输入框内的提示语会经由一个动画浮动至输入框上方，文本颜色同时变成强调色，明确显示此时该组件获得焦点&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;为了让开发者更加方便地实现这种效果，Google推出了&lt;strong&gt;TextInputLayout&lt;/strong&gt;组件。向该组件中放入一个&lt;strong&gt;EditText&lt;/strong&gt;组件（或其扩展类也可，比如&lt;strong&gt;TextInputEditText&lt;/strong&gt;），便可轻松实现Material Design文档中所要求的效果。&lt;/p&gt;
+
+&lt;p&gt;其中，要提一下的是TextInputEditText。相比于其他的EditText类，使用该类作为子View放入TextInputLayout可以在&lt;strong&gt;全屏模式时依然在编辑器里展示hint&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;接下来就让我们一起来详细地整理学习一下TextInputLayout。&lt;/p&gt;
+
+&lt;h2&gt;TextInputLayout详解&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;xml属性&amp;amp;常用方法&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;counterEnabled&lt;/strong&gt;：false or true，用于设置字符计数器的开启或关闭。&lt;/p&gt;
+
+&lt;p&gt;对应方法：&lt;strong&gt;&lt;em&gt;setCounterEnabled(boolean)&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;counterMaxLength&lt;/strong&gt;：设置字符计数器的最大长度。&lt;strong&gt;（仅用于设置计数器最大值，并不影响文本实际能输入的最大长度）&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;对应方法：&lt;strong&gt;&lt;em&gt;setCounterMaxLength(int)&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;errorEnabled&lt;/strong&gt;：false or true，用于设置错误提示是否开启。&lt;/p&gt;
+
+&lt;p&gt;对应方法：&lt;strong&gt;&lt;em&gt;setErrorEnabled(boolean)&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;hint&lt;/strong&gt;：设置输入框的提示语。&lt;/p&gt;
+
+&lt;p&gt;对应方法：&lt;strong&gt;&lt;em&gt;setHint(CharSequence)&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;hintAnimationEnabled&lt;/strong&gt;：true or false，开启或关闭hint浮动成标签的动画效果。&lt;/p&gt;
+
+&lt;p&gt;对应方法：&lt;strong&gt;&lt;em&gt;setHintAnimationEnabled(boolean)&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;hintEnabled&lt;/strong&gt;：true or false，开启或关闭hint浮动的功能，设为false的话就和之前的EditText一样，在输入文字后，提示语就消失了。&lt;/p&gt;
+
+&lt;p&gt;对应方法：&lt;strong&gt;&lt;em&gt;setHintEnabled(boolean)&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;hintTextAppearance&lt;/strong&gt;：设置hint的style，字体颜色，字体大小等，可引用系统自带的也可以自定义。&lt;strong&gt;若要使用请统一使用，以保证APP体验的统一性。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;对应方法：&lt;strong&gt;&lt;em&gt;setHintTextAppearance(int)&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;当文本输入类型为密码时，系统提供了一个开关来控制密码是否可见（默认为眼睛👁）。此为design包24.2.0新提供的功能。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;passwordToggleEnabled&lt;/strong&gt;：&lt;strong&gt;控制密码可见开关是否启用。&lt;/strong&gt;设为false则该功能不启用，密码输入框右侧也没有控制密码可见与否的开关。&lt;/p&gt;
+
+&lt;p&gt;对应方法：&lt;strong&gt;&lt;em&gt;setPasswordVisibilityToggleEnabled(boolean)&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;passwordToggleDrawable&lt;/strong&gt;：&lt;strong&gt;设置密码可见开关的图标。通常我们会在不同的情况下设定不同的图标，可通过自定义一个selector，根据“state_checked”属性来控制图标的切换。后面代码实践里会有示范。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;对应方法：&lt;strong&gt;&lt;em&gt;setPasswordVisibilityToggleDrawable(Drawable)&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;passwordToggleTint&lt;/strong&gt;：&lt;strong&gt;控制密码可见开关图标的颜色。在开启或关闭的状态下我们可以设定不同的颜色，可通过自定义一个color的selector，根据“state_checked”和“state_selected”属性来控制颜色的切换。后面代码实践里会有示范。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;对应方法：&lt;strong&gt;&lt;em&gt;setPasswordVisibilityToggleTintList(ColorStateList)&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;passwordToggleTintMode&lt;/strong&gt;：控制密码可见开关图标的背景颜色混合模式。这个地方我不是很能理解，暂作标记，希望有人可以指教。不过可以肯定的是正常需求都用不到这个属性。&lt;/p&gt;
+
+&lt;p&gt;分别是：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;ol&gt;
+&lt;li&gt;multiply[Sa*Da, Sc*Dc]&lt;/li&gt;
+&lt;li&gt;screen[Sa+Da-Sa*Da, Sc+Dc-Sc*Dc]&lt;/li&gt;
+&lt;li&gt;src_atop[Da, Sc*Da+(1-Sa)*Dc]&lt;/li&gt;
+&lt;li&gt;src_in[Sa*Da, Sc*Da]&lt;/li&gt;
+&lt;li&gt;src_over[Sa+(1-Sa)*Da, Rc=Sc+(1-Sa)*Dc]&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;对应方法：&lt;strong&gt;&lt;em&gt;setPasswordVisibilityToggleTintMode(PorterDuff.Mode)&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;：关于这方面的知识有兴趣请参考&lt;a href="http://weishu.me/2015/09/23/Xfermode-in-android/"&gt;Xfermode in android&lt;/a&gt;其中有关于这方面概念的解释。&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;passwordToggleContentDescription&lt;/strong&gt;：该功能是为Talkback或其他无障碍功能提供的。TalkBack会去读contentDescription的值，告诉用户这个操作是什么。&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;对应方法：&lt;strong&gt;&lt;em&gt;setPasswordVisibilityToggleContentDescription(int)&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2&gt;代码杂烩&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;效果图&lt;/strong&gt;
+ &lt;img src="https://cloud.githubusercontent.com/assets/12692071/20247096/cb1e4a76-a9ff-11e6-935c-3ef67e1ed79c.png" alt="效果图" /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;效果视频→&lt;/strong&gt;&lt;a href="http://v.youku.com/v_show/id_XMTczMTQyMDYwNA==.html"&gt;点这里&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Layout布局&lt;/strong&gt;&lt;/p&gt;
+&lt;pre class="highlight xml"&gt;&lt;code&gt;&lt;span class="nt"&gt;&amp;lt;LinearLayout&lt;/span&gt; &lt;span class="na"&gt;xmlns:android=&lt;/span&gt;&lt;span class="s"&gt;"http://schemas.android.com/apk/res/android"&lt;/span&gt;
+    &lt;span class="na"&gt;xmlns:app=&lt;/span&gt;&lt;span class="s"&gt;"http://schemas.android.com/apk/res-auto"&lt;/span&gt;
+    &lt;span class="na"&gt;xmlns:tools=&lt;/span&gt;&lt;span class="s"&gt;"http://schemas.android.com/tools"&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+    &lt;span class="na"&gt;tools:context=&lt;/span&gt;&lt;span class="s"&gt;"com.jiandanxinli.smileback.materiallogin.LoginActivity"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+    &lt;span class="nt"&gt;&amp;lt;ScrollView&lt;/span&gt;
+        &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/login_form"&lt;/span&gt;
+        &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+        &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+        &lt;span class="na"&gt;android:scrollbars=&lt;/span&gt;&lt;span class="s"&gt;"none"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+        &lt;span class="nt"&gt;&amp;lt;LinearLayout&lt;/span&gt;
+            &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/email_login_form"&lt;/span&gt;
+            &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+            &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+            &lt;span class="na"&gt;android:focusableInTouchMode=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt;
+            &lt;span class="na"&gt;android:orientation=&lt;/span&gt;&lt;span class="s"&gt;"vertical"&lt;/span&gt;
+            &lt;span class="na"&gt;android:paddingEnd=&lt;/span&gt;&lt;span class="s"&gt;"16dp"&lt;/span&gt;
+            &lt;span class="na"&gt;android:paddingStart=&lt;/span&gt;&lt;span class="s"&gt;"16dp"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;LinearLayout&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_marginTop=&lt;/span&gt;&lt;span class="s"&gt;"18dp"&lt;/span&gt;
+                &lt;span class="na"&gt;android:orientation=&lt;/span&gt;&lt;span class="s"&gt;"horizontal"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;ImageView&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_gravity=&lt;/span&gt;&lt;span class="s"&gt;"center_vertical"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_marginEnd=&lt;/span&gt;&lt;span class="s"&gt;"12dp"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:src=&lt;/span&gt;&lt;span class="s"&gt;"@drawable/ic_perm_identity_black_24dp"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;android.support.design.widget.TextInputLayout&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:hint=&lt;/span&gt;&lt;span class="s"&gt;"@string/hotchpotch_name_tv"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+                    &lt;span class="nt"&gt;&amp;lt;android.support.design.widget.TextInputEditText&lt;/span&gt;
+                        &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/edit_name"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:inputType=&lt;/span&gt;&lt;span class="s"&gt;"text"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;/android.support.design.widget.TextInputLayout&amp;gt;&lt;/span&gt;
+            &lt;span class="nt"&gt;&amp;lt;/LinearLayout&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;LinearLayout&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_marginTop=&lt;/span&gt;&lt;span class="s"&gt;"8dp"&lt;/span&gt;
+                &lt;span class="na"&gt;android:orientation=&lt;/span&gt;&lt;span class="s"&gt;"horizontal"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;ImageView&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_gravity=&lt;/span&gt;&lt;span class="s"&gt;"center_vertical"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_marginEnd=&lt;/span&gt;&lt;span class="s"&gt;"12dp"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:src=&lt;/span&gt;&lt;span class="s"&gt;"@drawable/ic_phone_black_24dp"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;android.support.design.widget.TextInputLayout&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:hint=&lt;/span&gt;&lt;span class="s"&gt;"@string/hotchpotch_phone_tv"&lt;/span&gt;
+                    &lt;span class="na"&gt;app:counterEnabled=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt;
+                    &lt;span class="na"&gt;app:counterMaxLength=&lt;/span&gt;&lt;span class="s"&gt;"11"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+                    &lt;span class="nt"&gt;&amp;lt;android.support.design.widget.TextInputEditText&lt;/span&gt;
+                        &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/edit_phone"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:inputType=&lt;/span&gt;&lt;span class="s"&gt;"phone"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:maxLength=&lt;/span&gt;&lt;span class="s"&gt;"11"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;/android.support.design.widget.TextInputLayout&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;/LinearLayout&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;LinearLayout&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                &lt;span class="na"&gt;android:orientation=&lt;/span&gt;&lt;span class="s"&gt;"horizontal"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;ImageView&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_gravity=&lt;/span&gt;&lt;span class="s"&gt;"center_vertical"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_marginEnd=&lt;/span&gt;&lt;span class="s"&gt;"12dp"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:src=&lt;/span&gt;&lt;span class="s"&gt;"@drawable/ic_mail_black_24dp"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;android.support.design.widget.TextInputLayout&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:hint=&lt;/span&gt;&lt;span class="s"&gt;"@string/hotchpotch_mail_tv"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+                    &lt;span class="nt"&gt;&amp;lt;android.support.design.widget.TextInputEditText&lt;/span&gt;
+                        &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/edit_email"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:inputType=&lt;/span&gt;&lt;span class="s"&gt;"textEmailAddress"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;/android.support.design.widget.TextInputLayout&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;/LinearLayout&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;LinearLayout&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_marginTop=&lt;/span&gt;&lt;span class="s"&gt;"8dp"&lt;/span&gt;
+                &lt;span class="na"&gt;android:orientation=&lt;/span&gt;&lt;span class="s"&gt;"horizontal"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;ImageView&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_gravity=&lt;/span&gt;&lt;span class="s"&gt;"center_vertical"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_marginEnd=&lt;/span&gt;&lt;span class="s"&gt;"12dp"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:src=&lt;/span&gt;&lt;span class="s"&gt;"@drawable/ic_security_black_24dp"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;android.support.design.widget.TextInputLayout&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:hint=&lt;/span&gt;&lt;span class="s"&gt;"@string/hotchpotch_password_tv"&lt;/span&gt;
+                    &lt;span class="na"&gt;app:passwordToggleDrawable=&lt;/span&gt;&lt;span class="s"&gt;"@drawable/visibility_selector"&lt;/span&gt;
+                    &lt;span class="na"&gt;app:passwordToggleEnabled=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt;
+                    &lt;span class="na"&gt;app:passwordToggleTint=&lt;/span&gt;&lt;span class="s"&gt;"@color/visibility_selector"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+                    &lt;span class="nt"&gt;&amp;lt;android.support.design.widget.TextInputEditText&lt;/span&gt;
+                        &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/edit_password"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:inputType=&lt;/span&gt;&lt;span class="s"&gt;"textPassword"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;/android.support.design.widget.TextInputLayout&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;/LinearLayout&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;LinearLayout&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                &lt;span class="na"&gt;android:orientation=&lt;/span&gt;&lt;span class="s"&gt;"horizontal"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;ImageView&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_gravity=&lt;/span&gt;&lt;span class="s"&gt;"center_vertical"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_marginEnd=&lt;/span&gt;&lt;span class="s"&gt;"12dp"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:src=&lt;/span&gt;&lt;span class="s"&gt;"@drawable/ic_feedback_black_24dp"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;android.support.design.widget.TextInputLayout&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:hint=&lt;/span&gt;&lt;span class="s"&gt;"@string/hotchpotch_feedback_tv"&lt;/span&gt;
+                    &lt;span class="na"&gt;app:counterEnabled=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt;
+                    &lt;span class="na"&gt;app:counterMaxLength=&lt;/span&gt;&lt;span class="s"&gt;"10"&lt;/span&gt;
+                    &lt;span class="na"&gt;app:hintTextAppearance=&lt;/span&gt;&lt;span class="s"&gt;"@style/FloatingStyle"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+                    &lt;span class="nt"&gt;&amp;lt;android.support.design.widget.TextInputEditText&lt;/span&gt;
+                        &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/edit_feedback"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                        &lt;span class="na"&gt;android:inputType=&lt;/span&gt;&lt;span class="s"&gt;"text"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;/android.support.design.widget.TextInputLayout&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;/LinearLayout&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;Button&lt;/span&gt;
+                &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/submit_btn"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_marginEnd=&lt;/span&gt;&lt;span class="s"&gt;"16dp"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_marginStart=&lt;/span&gt;&lt;span class="s"&gt;"16dp"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_marginTop=&lt;/span&gt;&lt;span class="s"&gt;"30dp"&lt;/span&gt;
+                &lt;span class="na"&gt;android:background=&lt;/span&gt;&lt;span class="s"&gt;"@drawable/btn_selector"&lt;/span&gt;
+                &lt;span class="na"&gt;android:text=&lt;/span&gt;&lt;span class="s"&gt;"@string/hotchpotch_submit_btn"&lt;/span&gt;
+                &lt;span class="na"&gt;android:textColor=&lt;/span&gt;&lt;span class="s"&gt;"@color/colorWhite"&lt;/span&gt;
+                &lt;span class="na"&gt;android:textSize=&lt;/span&gt;&lt;span class="s"&gt;"20sp"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+        &lt;span class="nt"&gt;&amp;lt;/LinearLayout&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/ScrollView&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/LinearLayout&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;FloatingStyle&lt;/strong&gt;&lt;/p&gt;
+&lt;pre class="highlight xml"&gt;&lt;code&gt;&lt;span class="nt"&gt;&amp;lt;style&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;"FloatingStyle"&lt;/span&gt; &lt;span class="na"&gt;parent=&lt;/span&gt;&lt;span class="s"&gt;"@android:style/TextAppearance"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;"android:textColor"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;#FFEB3B&lt;span class="nt"&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;"android:textSize"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;20sp&lt;span class="nt"&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;btn_selector&lt;/strong&gt;&lt;/p&gt;
+&lt;pre class="highlight xml"&gt;&lt;code&gt;&lt;span class="nt"&gt;&amp;lt;selector&lt;/span&gt; &lt;span class="na"&gt;xmlns:android=&lt;/span&gt;&lt;span class="s"&gt;"http://schemas.android.com/apk/res/android"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;android:drawable=&lt;/span&gt;&lt;span class="s"&gt;"@color/colorPrimaryDark"&lt;/span&gt; &lt;span class="na"&gt;android:state_pressed=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;android:drawable=&lt;/span&gt;&lt;span class="s"&gt;"@color/colorPrimary"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/selector&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;drawable/visibility_selector&lt;/strong&gt;&lt;/p&gt;
+&lt;pre class="highlight xml"&gt;&lt;code&gt;&lt;span class="nt"&gt;&amp;lt;selector&lt;/span&gt; &lt;span class="na"&gt;xmlns:android=&lt;/span&gt;&lt;span class="s"&gt;"http://schemas.android.com/apk/res/android"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;android:drawable=&lt;/span&gt;&lt;span class="s"&gt;"@drawable/ic_visibility_black_24dp"&lt;/span&gt; &lt;span class="na"&gt;android:state_checked=&lt;/span&gt;&lt;span class="s"&gt;"false"&lt;/span&gt; &lt;span class="na"&gt;android:state_pressed=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;android:drawable=&lt;/span&gt;&lt;span class="s"&gt;"@drawable/ic_visibility_off_black_24dp"&lt;/span&gt; &lt;span class="na"&gt;android:state_checked=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt; &lt;span class="na"&gt;android:state_pressed=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;android:drawable=&lt;/span&gt;&lt;span class="s"&gt;"@drawable/ic_visibility_black_24dp"&lt;/span&gt; &lt;span class="na"&gt;android:state_checked=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt; &lt;span class="na"&gt;android:state_pressed=&lt;/span&gt;&lt;span class="s"&gt;"false"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;android:drawable=&lt;/span&gt;&lt;span class="s"&gt;"@drawable/ic_visibility_off_black_24dp"&lt;/span&gt; &lt;span class="na"&gt;android:state_checked=&lt;/span&gt;&lt;span class="s"&gt;"false"&lt;/span&gt; &lt;span class="na"&gt;android:state_pressed=&lt;/span&gt;&lt;span class="s"&gt;"false"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/selector&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;color/visibility_selector&lt;/strong&gt;&lt;/p&gt;
+&lt;pre class="highlight xml"&gt;&lt;code&gt;&lt;span class="nt"&gt;&amp;lt;selector&lt;/span&gt; &lt;span class="na"&gt;xmlns:android=&lt;/span&gt;&lt;span class="s"&gt;"http://schemas.android.com/apk/res/android"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;android:color=&lt;/span&gt;&lt;span class="s"&gt;"@color/colorAccent"&lt;/span&gt; &lt;span class="na"&gt;android:state_checked=&lt;/span&gt;&lt;span class="s"&gt;"false"&lt;/span&gt; &lt;span class="na"&gt;android:state_pressed=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;android:color=&lt;/span&gt;&lt;span class="s"&gt;"@color/colorDivider"&lt;/span&gt; &lt;span class="na"&gt;android:state_checked=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt; &lt;span class="na"&gt;android:state_pressed=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;android:color=&lt;/span&gt;&lt;span class="s"&gt;"@color/colorAccent"&lt;/span&gt; &lt;span class="na"&gt;android:state_checked=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt; &lt;span class="na"&gt;android:state_pressed=&lt;/span&gt;&lt;span class="s"&gt;"false"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;android:color=&lt;/span&gt;&lt;span class="s"&gt;"@color/colorDivider"&lt;/span&gt; &lt;span class="na"&gt;android:state_checked=&lt;/span&gt;&lt;span class="s"&gt;"false"&lt;/span&gt; &lt;span class="na"&gt;android:state_pressed=&lt;/span&gt;&lt;span class="s"&gt;"false"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/selector&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;HotchpotchActivity.java&lt;/strong&gt;&lt;/p&gt;
+&lt;pre class="highlight java"&gt;&lt;code&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;HotchpotchActivity&lt;/span&gt; &lt;span class="kd"&gt;extends&lt;/span&gt; &lt;span class="n"&gt;AppCompatActivity&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;TextInputEditText&lt;/span&gt; &lt;span class="n"&gt;mNameEditx&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;TextInputEditText&lt;/span&gt; &lt;span class="n"&gt;mPhoneEditx&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;TextInputEditText&lt;/span&gt; &lt;span class="n"&gt;mEmailEditx&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;TextInputEditText&lt;/span&gt; &lt;span class="n"&gt;mPasswordEditx&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;TextInputEditText&lt;/span&gt; &lt;span class="n"&gt;mFeedbackEditx&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;mContentName&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;mContentPhone&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;mContentEmail&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;mContentPassword&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;mContentFeedback&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onCreate&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Bundle&lt;/span&gt; &lt;span class="n"&gt;savedInstanceState&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;onCreate&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;savedInstanceState&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;layout&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;activity_hotchpotch&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+
+        &lt;span class="n"&gt;initView&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;initView&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;mNameEditx&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TextInputEditText&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;findViewById&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;edit_name&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;mPhoneEditx&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TextInputEditText&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;findViewById&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;edit_phone&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;mEmailEditx&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TextInputEditText&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;findViewById&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;edit_email&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;mPasswordEditx&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TextInputEditText&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;findViewById&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;edit_password&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;mFeedbackEditx&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TextInputEditText&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;findViewById&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;edit_feedback&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+
+        &lt;span class="n"&gt;Button&lt;/span&gt; &lt;span class="n"&gt;submitBtn&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Button&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;findViewById&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;submit_btn&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;submitBtn&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setOnClickListener&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;View&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;OnClickListener&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="nd"&gt;@Override&lt;/span&gt;
+            &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onClick&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;controlAction&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="o"&gt;});&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;getContent&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;mContentName&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mNameEditx&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getText&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="n"&gt;mContentPhone&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mPhoneEditx&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getText&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="n"&gt;mContentEmail&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mEmailEditx&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getText&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="n"&gt;mContentPassword&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mPasswordEditx&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getText&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="n"&gt;mContentFeedback&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mFeedbackEditx&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getText&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;controlAction&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;getContent&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mContentName&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;length&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;showToast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"姓名不能为空!"&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mContentPhone&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;length&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;11&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;showToast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"请正确填写11位手机号码!"&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mContentEmail&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;length&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="n"&gt;android&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;util&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;Patterns&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;EMAIL_ADDRESS&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;matcher&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mContentEmail&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;matches&lt;/span&gt;&lt;span class="o"&gt;())&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;showToast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"请正确填写邮箱地址!"&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mContentPassword&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;length&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;showToast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"密码不能为空"&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mContentFeedback&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;length&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;showToast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"反馈意见不能为空!"&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mContentFeedback&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;length&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;showToast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"反馈意见长度字数不能大于10!"&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;doSubmission&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;doSubmission&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;showToast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"恭喜您,数据正确!"&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;showToast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;Toast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;makeText&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;HotchpotchActivity&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;this&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Toast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;LENGTH_SHORT&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;show&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;登录页面实战&lt;/h2&gt;
+
+&lt;p&gt;就像文章开头说的，这是一个系列文章，路线是一个APP打开的路线。那么这第一篇就用来写登录页面吧，代码如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Layout布局&lt;/strong&gt;&lt;/p&gt;
+&lt;pre class="highlight xml"&gt;&lt;code&gt;&lt;span class="nt"&gt;&amp;lt;LinearLayout&lt;/span&gt; &lt;span class="na"&gt;xmlns:android=&lt;/span&gt;&lt;span class="s"&gt;"http://schemas.android.com/apk/res/android"&lt;/span&gt;
+    &lt;span class="na"&gt;xmlns:app=&lt;/span&gt;&lt;span class="s"&gt;"http://schemas.android.com/apk/res-auto"&lt;/span&gt;
+    &lt;span class="na"&gt;xmlns:tools=&lt;/span&gt;&lt;span class="s"&gt;"http://schemas.android.com/tools"&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+    &lt;span class="na"&gt;android:background=&lt;/span&gt;&lt;span class="s"&gt;"@color/colorPrimary"&lt;/span&gt;
+    &lt;span class="na"&gt;android:gravity=&lt;/span&gt;&lt;span class="s"&gt;"center_horizontal"&lt;/span&gt;
+    &lt;span class="na"&gt;android:orientation=&lt;/span&gt;&lt;span class="s"&gt;"vertical"&lt;/span&gt;
+    &lt;span class="na"&gt;android:paddingEnd=&lt;/span&gt;&lt;span class="s"&gt;"32dp"&lt;/span&gt;
+    &lt;span class="na"&gt;android:paddingStart=&lt;/span&gt;&lt;span class="s"&gt;"32dp"&lt;/span&gt;
+    &lt;span class="na"&gt;tools:context=&lt;/span&gt;&lt;span class="s"&gt;"com.jiandanxinli.smileback.materiallogin.LoginActivity"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+    &lt;span class="c"&gt;&amp;lt;!-- Login progress --&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;ProgressBar&lt;/span&gt;
+        &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/login_progress"&lt;/span&gt;
+        &lt;span class="na"&gt;style=&lt;/span&gt;&lt;span class="s"&gt;"?android:attr/progressBarStyleLarge"&lt;/span&gt;
+        &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+        &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+        &lt;span class="na"&gt;android:visibility=&lt;/span&gt;&lt;span class="s"&gt;"gone"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+    &lt;span class="nt"&gt;&amp;lt;ScrollView&lt;/span&gt;
+        &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/login_form"&lt;/span&gt;
+        &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+        &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+        &lt;span class="nt"&gt;&amp;lt;LinearLayout&lt;/span&gt;
+            &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/email_login_form"&lt;/span&gt;
+            &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+            &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+            &lt;span class="na"&gt;android:layout_gravity=&lt;/span&gt;&lt;span class="s"&gt;"center"&lt;/span&gt;
+            &lt;span class="na"&gt;android:layout_marginBottom=&lt;/span&gt;&lt;span class="s"&gt;"24dp"&lt;/span&gt;
+            &lt;span class="na"&gt;android:focusableInTouchMode=&lt;/span&gt;&lt;span class="s"&gt;"true"&lt;/span&gt;
+            &lt;span class="na"&gt;android:orientation=&lt;/span&gt;&lt;span class="s"&gt;"vertical"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;TextView&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_gravity=&lt;/span&gt;&lt;span class="s"&gt;"center_horizontal"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_marginBottom=&lt;/span&gt;&lt;span class="s"&gt;"48dp"&lt;/span&gt;
+                &lt;span class="na"&gt;android:fontFamily=&lt;/span&gt;&lt;span class="s"&gt;"cursive"&lt;/span&gt;
+                &lt;span class="na"&gt;android:text=&lt;/span&gt;&lt;span class="s"&gt;"@string/app_name"&lt;/span&gt;
+                &lt;span class="na"&gt;android:textSize=&lt;/span&gt;&lt;span class="s"&gt;"48sp"&lt;/span&gt;
+                &lt;span class="na"&gt;android:textStyle=&lt;/span&gt;&lt;span class="s"&gt;"bold"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+
+            &lt;span class="nt"&gt;&amp;lt;android.support.design.widget.TextInputLayout&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_marginBottom=&lt;/span&gt;&lt;span class="s"&gt;"24dp"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;AutoCompleteTextView&lt;/span&gt;
+                    &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/email"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:hint=&lt;/span&gt;&lt;span class="s"&gt;"@string/prompt_email"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:inputType=&lt;/span&gt;&lt;span class="s"&gt;"textEmailAddress"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:maxLines=&lt;/span&gt;&lt;span class="s"&gt;"1"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;/android.support.design.widget.TextInputLayout&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;android.support.design.widget.TextInputLayout&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_marginBottom=&lt;/span&gt;&lt;span class="s"&gt;"40dp"&lt;/span&gt;
+                &lt;span class="na"&gt;app:passwordToggleDrawable=&lt;/span&gt;&lt;span class="s"&gt;"@drawable/visibility_selector"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+
+                &lt;span class="nt"&gt;&amp;lt;android.support.design.widget.TextInputEditText&lt;/span&gt;
+                    &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/password"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:hint=&lt;/span&gt;&lt;span class="s"&gt;"@string/prompt_password"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:imeActionId=&lt;/span&gt;&lt;span class="s"&gt;"@+id/login"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:imeActionLabel=&lt;/span&gt;&lt;span class="s"&gt;"@string/action_sign_in_short"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:imeOptions=&lt;/span&gt;&lt;span class="s"&gt;"actionUnspecified"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:inputType=&lt;/span&gt;&lt;span class="s"&gt;"textPassword"&lt;/span&gt;
+                    &lt;span class="na"&gt;android:maxLines=&lt;/span&gt;&lt;span class="s"&gt;"1"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;/android.support.design.widget.TextInputLayout&amp;gt;&lt;/span&gt;
+
+            &lt;span class="nt"&gt;&amp;lt;Button&lt;/span&gt;
+                &lt;span class="na"&gt;android:id=&lt;/span&gt;&lt;span class="s"&gt;"@+id/email_sign_in_button"&lt;/span&gt;
+                &lt;span class="na"&gt;style=&lt;/span&gt;&lt;span class="s"&gt;"?android:textAppearanceSmall"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;"match_parent"&lt;/span&gt;
+                &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;"wrap_content"&lt;/span&gt;
+                &lt;span class="na"&gt;android:background=&lt;/span&gt;&lt;span class="s"&gt;"@color/colorPrimaryDark"&lt;/span&gt;
+                &lt;span class="na"&gt;android:text=&lt;/span&gt;&lt;span class="s"&gt;"@string/action_sign_in"&lt;/span&gt;
+                &lt;span class="na"&gt;android:textSize=&lt;/span&gt;&lt;span class="s"&gt;"18sp"&lt;/span&gt;
+                &lt;span class="na"&gt;android:textStyle=&lt;/span&gt;&lt;span class="s"&gt;"bold"&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+
+        &lt;span class="nt"&gt;&amp;lt;/LinearLayout&amp;gt;&lt;/span&gt;
+    &lt;span class="nt"&gt;&amp;lt;/ScrollView&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/LinearLayout&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;LoginActivity.java&lt;/strong&gt;&lt;/p&gt;
+&lt;pre class="highlight java"&gt;&lt;code&gt;&lt;span class="cm"&gt;/**
+ * 登录页面
+ *
+ * @author bugdev
+ */&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;LoginActivity&lt;/span&gt; &lt;span class="kd"&gt;extends&lt;/span&gt; &lt;span class="n"&gt;AppCompatActivity&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;AutoCompleteTextView&lt;/span&gt; &lt;span class="n"&gt;mEmailView&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;EditText&lt;/span&gt; &lt;span class="n"&gt;mPasswordView&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;ProgressDialog&lt;/span&gt; &lt;span class="n"&gt;mProgressDialog&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onCreate&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Bundle&lt;/span&gt; &lt;span class="n"&gt;savedInstanceState&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;onCreate&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;savedInstanceState&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;layout&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;activity_login&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+
+        &lt;span class="n"&gt;mEmailView&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;AutoCompleteTextView&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;findViewById&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;email&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;mPasswordView&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;EditText&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;findViewById&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;password&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+
+        &lt;span class="n"&gt;mPasswordView&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setOnEditorActionListener&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;TextView&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;OnEditorActionListener&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="nd"&gt;@Override&lt;/span&gt;
+            &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="nf"&gt;onEditorAction&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TextView&lt;/span&gt; &lt;span class="n"&gt;textView&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;KeyEvent&lt;/span&gt; &lt;span class="n"&gt;keyEvent&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;id&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;login&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="n"&gt;id&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;EditorInfo&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;IME_NULL&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                    &lt;span class="c1"&gt;//尝试登录&lt;/span&gt;
+                    &lt;span class="n"&gt;attemptLogin&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+                    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                &lt;span class="o"&gt;}&lt;/span&gt;
+                &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="o"&gt;});&lt;/span&gt;
+
+        &lt;span class="n"&gt;Button&lt;/span&gt; &lt;span class="n"&gt;emailSignInButton&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Button&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;findViewById&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;email_sign_in_button&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;emailSignInButton&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setOnClickListener&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;OnClickListener&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="nd"&gt;@Override&lt;/span&gt;
+            &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onClick&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="c1"&gt;//尝试登录&lt;/span&gt;
+                &lt;span class="n"&gt;attemptLogin&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="o"&gt;});&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="cm"&gt;/**
+     * 说明:获取用户输入的内容并调用相应的验证方法
+     */&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;attemptLogin&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;email&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mEmailView&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getText&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;password&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mPasswordView&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getText&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;toString&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;isEmailValid&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;email&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;isPasswordValid&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;password&lt;/span&gt;&lt;span class="o"&gt;))&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;login&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+
+    &lt;span class="cm"&gt;/**
+     * 说明:验证邮箱格式
+     *
+     * @param email 邮箱地址
+     * @return 邮箱地址格式正确或错误
+     */&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="nf"&gt;isEmailValid&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;email&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;email&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;length&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;showToast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"请输入邮箱!"&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(!&lt;/span&gt;&lt;span class="n"&gt;android&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;util&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;Patterns&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;EMAIL_ADDRESS&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;matcher&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;email&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;matches&lt;/span&gt;&lt;span class="o"&gt;())&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;showToast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"邮箱格式不正确!"&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="cm"&gt;/**
+     * 说明:验证密码格式
+     *
+     * @param password 密码
+     * @return 密码格式正确或错误
+     */&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="nf"&gt;isPasswordValid&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;password&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;password&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;length&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;showToast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"请输入密码!"&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;password&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;length&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;showToast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"请输入至少6位密码!"&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="cm"&gt;/**
+     * 说明:显示Toast的方法
+     *
+     * @param message 要显示的消息
+     */&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;showToast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;Toast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;makeText&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;getApplicationContext&lt;/span&gt;&lt;span class="o"&gt;(),&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Toast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;LENGTH_SHORT&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;show&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="cm"&gt;/**
+     * 说明:登录
+     * &amp;lt;p&amp;gt;
+     * 这里为了展示对话框,将对话框固定显示了3秒
+     */&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;login&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;showDialog&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+        &lt;span class="n"&gt;Timer&lt;/span&gt; &lt;span class="n"&gt;timer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Timer&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="n"&gt;TimerTask&lt;/span&gt; &lt;span class="n"&gt;timerTask&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;TimerTask&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="nd"&gt;@Override&lt;/span&gt;
+            &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;run&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;mProgressDialog&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;dismiss&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+                &lt;span class="n"&gt;Intent&lt;/span&gt; &lt;span class="n"&gt;intent&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Intent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;LoginActivity&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;this&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;HomeActivity&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+                &lt;span class="n"&gt;startActivity&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;intent&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+                &lt;span class="n"&gt;finish&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="o"&gt;};&lt;/span&gt;
+        &lt;span class="n"&gt;timer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;schedule&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;timerTask&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3000&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="cm"&gt;/**
+     * 说明:show一个Dialog
+     */&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;showDialog&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;mProgressDialog&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;ProgressDialog&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;style&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;AppTheme_Dark_Dialog&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;mProgressDialog&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setIndeterminate&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;mProgressDialog&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setMessage&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;"正在验证..."&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;mProgressDialog&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;show&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;Dialog Style&lt;/strong&gt;&lt;/p&gt;
+&lt;pre class="highlight xml"&gt;&lt;code&gt;&lt;span class="nt"&gt;&amp;lt;style&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;"AppTheme.Dark.Dialog"&lt;/span&gt; &lt;span class="na"&gt;parent=&lt;/span&gt;&lt;span class="s"&gt;"Theme.AppCompat.Dialog"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;"colorAccent"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;@color/colorAccent&lt;span class="nt"&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;"android:textColorPrimary"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;@color/textPrimary&lt;span class="nt"&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+        &lt;span class="nt"&gt;&amp;lt;item&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;"android:background"&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;@color/colorPrimary&lt;span class="nt"&gt;&amp;lt;/item&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;效果图&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src="https://cloud.githubusercontent.com/assets/12692071/20247102/d1328fe4-a9ff-11e6-8f6e-513f79d2446c.png" alt="效果图" /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;效果视频→&lt;/strong&gt;&lt;a href="http://v.youku.com/v_show/id_XMTczMjA1MzY4NA==.html"&gt;点这里&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2&gt;参考文章&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href="http://babich.biz/mobile-form-usability/"&gt;Mobile Form Usability&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href="https://developer.android.com/guide/index.html"&gt;Android官方文档&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href="https://developer.android.com/guide/index.html"&gt;Text fields | Material Design&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href="https://code.tutsplus.com/tutorials/creating-a-login-screen-using-textinputlayout--cms-24168"&gt;Creating a Login Screen Using TextInputLayout&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2&gt;关于&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src="https://cloud.githubusercontent.com/assets/12692071/20247234/0341c3f4-aa02-11e6-8eba-fe355635411e.jpg" alt="二维码" /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;微信公众号： BugDev「bugdev」&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;知乎专栏：&lt;a href="https://code.tutsplus.com/tutorials/creating-a-login-screen-using-textinputlayout--cms-24168"&gt;BugDev&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;欢迎关注啦~ ！&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>利用Express与MySQL搭建超简洁的Blog</title>
     <link rel="alternate" href="https://jiandanxinli.github.io/2016-10-30.html"/>
     <id>https://jiandanxinli.github.io/2016-10-30.html</id>
     <published>2016-10-30T08:00:00+08:00</published>
-    <updated>2016-10-31T15:41:31+08:00</updated>
+    <updated>2016-11-01T12:59:01+08:00</updated>
     <author>
       <name>lei.wang</name>
     </author>
@@ -48,15 +1047,15 @@ GET /posts/new ：填写文章
 &lt;/ol&gt;
 
 &lt;p&gt;在 &lt;code&gt;package.json&lt;/code&gt; 文件中添加 &lt;code&gt;&amp;quot;mysql&amp;quot;: &amp;quot;latest&amp;quot;&lt;/code&gt;&lt;/p&gt;
-&lt;pre class="highlight json"&gt;&lt;code&gt;&lt;span class="s2"&gt;"dependencies"&lt;/span&gt;&lt;span class="err"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="w"&gt;
-  &lt;/span&gt;&lt;span class="nt"&gt;"body-parser"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~1.15.1"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
-  &lt;/span&gt;&lt;span class="nt"&gt;"cookie-parser"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~1.4.3"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
-  &lt;/span&gt;&lt;span class="nt"&gt;"debug"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~2.2.0"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
-  &lt;/span&gt;&lt;span class="nt"&gt;"ejs"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~2.4.1"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
-  &lt;/span&gt;&lt;span class="nt"&gt;"express"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~4.13.4"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
-  &lt;/span&gt;&lt;span class="nt"&gt;"morgan"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~1.7.0"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
-  &lt;/span&gt;&lt;span class="nt"&gt;"serve-favicon"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~2.3.0"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
-  &lt;/span&gt;&lt;span class="nt"&gt;"mysql"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"latest"&lt;/span&gt;&lt;span class="w"&gt;
+&lt;pre class="highlight json"&gt;&lt;code&gt;&lt;span class="s2"&gt;"dependencies"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="w"&gt;
+  &lt;/span&gt;&lt;span class="s2"&gt;"body-parser"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~1.15.1"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
+  &lt;/span&gt;&lt;span class="s2"&gt;"cookie-parser"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~1.4.3"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
+  &lt;/span&gt;&lt;span class="s2"&gt;"debug"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~2.2.0"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
+  &lt;/span&gt;&lt;span class="s2"&gt;"ejs"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~2.4.1"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
+  &lt;/span&gt;&lt;span class="s2"&gt;"express"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~4.13.4"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
+  &lt;/span&gt;&lt;span class="s2"&gt;"morgan"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~1.7.0"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
+  &lt;/span&gt;&lt;span class="s2"&gt;"serve-favicon"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"~2.3.0"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="w"&gt;
+  &lt;/span&gt;&lt;span class="s2"&gt;"mysql"&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;"latest"&lt;/span&gt;&lt;span class="w"&gt;
 &lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;&lt;span class="w"&gt;
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;并执行 &lt;code&gt;npm install&lt;/code&gt; 安装依赖包&lt;/p&gt;
@@ -241,7 +1240,7 @@ mutual – 与数据库交互
     <link rel="alternate" href="https://jiandanxinli.github.io/2016-10-18.html"/>
     <id>https://jiandanxinli.github.io/2016-10-18.html</id>
     <published>2016-10-18T08:00:00+08:00</published>
-    <updated>2016-10-31T10:47:55+08:00</updated>
+    <updated>2016-10-18T13:14:29+08:00</updated>
     <author>
       <name>zhangyao</name>
     </author>
@@ -389,7 +1388,7 @@ mutual – 与数据库交互
     <link rel="alternate" href="https://jiandanxinli.github.io/2016-09-01.html"/>
     <id>https://jiandanxinli.github.io/2016-09-01.html</id>
     <published>2016-09-01T08:00:00+08:00</published>
-    <updated>2016-10-31T10:47:55+08:00</updated>
+    <updated>2016-09-03T08:39:47+08:00</updated>
     <author>
       <name>Ben</name>
     </author>
@@ -514,8 +1513,8 @@ riot --modular
 &lt;pre class="highlight plaintext"&gt;&lt;code&gt;riot --ext tag.html modules/ dist/tags.js
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;如果你使用 &lt;a href="https://github.com/srackham/tag-loader"&gt;Webpack tag loader&lt;/a&gt;，需要&lt;a href="http://webpack.github.io/docs/using-loaders.html#configuration"&gt;设置 loader&lt;/a&gt;：&lt;/p&gt;
-&lt;pre class="highlight json"&gt;&lt;code&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="err"&gt;test:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="err"&gt;/\.tag.html$/,&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="err"&gt;loader:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="err"&gt;'tag'&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class="highlight plaintext"&gt;&lt;code&gt;{ test: /\.tag.html$/, loader: 'tag' }
+&lt;/code&gt;&lt;/pre&gt;
 &lt;h4&gt;在自定义标签里使用 &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; 标签&lt;/h4&gt;
 
 &lt;p&gt;Riot.js 支持在&lt;a href="http://riotjs.com/guide/#no-script-tag"&gt;自定义标签里不使用 &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; 标签&lt;/a&gt;，但你需要把 Javascript 代码写在 &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; 标签里。这可以让代码更易于理解以及避免 IDE 识别混乱。&lt;/p&gt;
@@ -993,10 +1992,10 @@ This module uses the &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nv"&gt;
 | --- | --- | ---
 | &lt;span class="sb"&gt;`min`&lt;/span&gt; | Number | number where range starts (lower limit).
 | &lt;span class="sb"&gt;`max`&lt;/span&gt; | Number | Number where range ends (upper limit).
-| &lt;span class="sb"&gt;`values`&lt;/span&gt; | Number&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nv"&gt;] *optional* | Array containing start and end value.  E.g. `values="[10, 20&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;"&lt;span class="sb"&gt;`. Defaults to `&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nv"&gt;opts.min, opts.max&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="err"&gt;`&lt;/span&gt;.
-| &lt;span class="sb"&gt;`step`&lt;/span&gt; | Number &lt;span class="ge"&gt;*optional*&lt;/span&gt; | Number to increment / decrement values by. Defaults to 1.
-| &lt;span class="sb"&gt;`on-slide`&lt;/span&gt; | Function &lt;span class="ge"&gt;*optional*&lt;/span&gt; | Function called with &lt;span class="sb"&gt;`(values, HANDLE)`&lt;/span&gt; while a user drags the start (&lt;span class="sb"&gt;`HANDLE == 0`&lt;/span&gt;) or end (&lt;span class="sb"&gt;`HANDLE == 1`&lt;/span&gt;) handle. E.g. &lt;span class="sb"&gt;`on-slide={ updateInputs }`&lt;/span&gt;, with &lt;span class="sb"&gt;`tag.updateInputs = (values, HANDLE) =&amp;gt; { const value = values[HANDLE]; }`&lt;/span&gt;.
-| &lt;span class="sb"&gt;`on-end`&lt;/span&gt; | Function &lt;span class="ge"&gt;*optional*&lt;/span&gt; | Function called with &lt;span class="sb"&gt;`(values, HANDLE)`&lt;/span&gt; when user stops dragging a handle.
+| &lt;span class="sb"&gt;`values`&lt;/span&gt; | Number&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nv"&gt;] *optional* | Array containing start and end value.  E.g. `values="[10, 20&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;"&lt;span class="sb"&gt;`. Defaults to `&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nv"&gt;opts.min, opts.max&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="sb"&gt;`.
+| `&lt;/span&gt;step&lt;span class="sb"&gt;` | Number *optional* | Number to increment / decrement values by. Defaults to 1.
+| `&lt;/span&gt;on-slide&lt;span class="sb"&gt;` | Function *optional* | Function called with `&lt;/span&gt;(values, HANDLE)&lt;span class="sb"&gt;` while a user drags the start (`&lt;/span&gt;HANDLE == 0&lt;span class="sb"&gt;`) or end (`&lt;/span&gt;HANDLE == 1&lt;span class="sb"&gt;`) handle. E.g. `&lt;/span&gt;on-slide={ updateInputs }&lt;span class="sb"&gt;`, with `&lt;/span&gt;tag.updateInputs = (values, HANDLE) =&amp;gt; { const value = values&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nv"&gt;HANDLE&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;; }&lt;span class="sb"&gt;`.
+| `&lt;/span&gt;on-end&lt;span class="sb"&gt;` | Function *optional* | Function called with `&lt;/span&gt;(values, HANDLE)&lt;span class="err"&gt;`&lt;/span&gt; when user stops dragging a handle.
 
 For customising the slider appearance see the &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nv"&gt;Styling section in the noUiSlider docs&lt;/span&gt;&lt;span class="p"&gt;](&lt;/span&gt;&lt;span class="sx"&gt;http://refreshless.com/nouislider/more/#section-styling&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;.
 &lt;/code&gt;&lt;/pre&gt;
@@ -1108,7 +2107,7 @@ For customising the slider appearance see the &lt;span class="p"&gt;[&lt;/span&g
     <link rel="alternate" href="https://jiandanxinli.github.io/2016-08-31.html"/>
     <id>https://jiandanxinli.github.io/2016-08-31.html</id>
     <published>2016-08-31T08:00:00+08:00</published>
-    <updated>2016-10-31T10:47:55+08:00</updated>
+    <updated>2016-08-31T11:50:41+08:00</updated>
     <author>
       <name>BugDev</name>
     </author>
@@ -1817,7 +2816,7 @@ For customising the slider appearance see the &lt;span class="p"&gt;[&lt;/span&g
     <link rel="alternate" href="https://jiandanxinli.github.io/2016-08-25.html"/>
     <id>https://jiandanxinli.github.io/2016-08-25.html</id>
     <published>2016-08-25T08:00:00+08:00</published>
-    <updated>2016-10-31T10:47:55+08:00</updated>
+    <updated>2016-08-29T11:22:16+08:00</updated>
     <author>
       <name>fengd</name>
     </author>
@@ -1914,7 +2913,7 @@ For customising the slider appearance see the &lt;span class="p"&gt;[&lt;/span&g
     <link rel="alternate" href="https://jiandanxinli.github.io/2016-08-11.html"/>
     <id>https://jiandanxinli.github.io/2016-08-11.html</id>
     <published>2016-08-11T08:00:00+08:00</published>
-    <updated>2016-08-11T20:51:24+08:00</updated>
+    <updated>2016-08-11T20:05:39+08:00</updated>
     <author>
       <name>zangbianxuegu</name>
     </author>
@@ -2121,7 +3120,7 @@ For customising the slider appearance see the &lt;span class="p"&gt;[&lt;/span&g
 &lt;li&gt;t-：表示一个主题（Theme），如 &lt;code&gt;.t-light&lt;/code&gt;。&lt;/li&gt;
 &lt;li&gt;s-：表示一个上下文或作用域（Scope），如 &lt;code&gt;.s-cms-content&lt;/code&gt;。&lt;/li&gt;
 &lt;li&gt;is-，has-：表示一种状态或条件样式。如 &lt;code&gt;.is-active&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;em&gt;：表示一个 hack，如 `.&lt;/em&gt;important`。&lt;/li&gt;
+&lt;li&gt;_：表示一个 hack，如 &lt;code&gt;._important&lt;/code&gt;。&lt;/li&gt;
 &lt;li&gt;js-：表示一个 JavaScript 钩子。如 &lt;code&gt;.js-modal&lt;/code&gt;。&lt;/li&gt;
 &lt;li&gt;qa-：表示测试钩子。&lt;/li&gt;
 &lt;/ul&gt;
@@ -2207,7 +3206,7 @@ For customising the slider appearance see the &lt;span class="p"&gt;[&lt;/span&g
     <link rel="alternate" href="https://jiandanxinli.github.io/2016-08-09.html"/>
     <id>https://jiandanxinli.github.io/2016-08-09.html</id>
     <published>2016-08-09T08:00:00+08:00</published>
-    <updated>2016-08-11T20:51:24+08:00</updated>
+    <updated>2016-08-10T10:40:30+08:00</updated>
     <author>
       <name>lei.wang</name>
     </author>
@@ -2379,7 +3378,7 @@ For customising the slider appearance see the &lt;span class="p"&gt;[&lt;/span&g
     <link rel="alternate" href="https://jiandanxinli.github.io/2016-08-06.html"/>
     <id>https://jiandanxinli.github.io/2016-08-06.html</id>
     <published>2016-08-06T08:00:00+08:00</published>
-    <updated>2016-08-19T11:21:36+08:00</updated>
+    <updated>2016-08-16T07:21:15+08:00</updated>
     <author>
       <name>Ben</name>
     </author>
@@ -2463,7 +3462,7 @@ For customising the slider appearance see the &lt;span class="p"&gt;[&lt;/span&g
     <link rel="alternate" href="https://jiandanxinli.github.io/2016-07-31.html"/>
     <id>https://jiandanxinli.github.io/2016-07-31.html</id>
     <published>2016-07-31T08:00:00+08:00</published>
-    <updated>2016-08-11T20:51:24+08:00</updated>
+    <updated>2016-08-04T13:13:28+08:00</updated>
     <author>
       <name>fengd</name>
     </author>
@@ -2623,7 +3622,7 @@ For customising the slider appearance see the &lt;span class="p"&gt;[&lt;/span&g
     <link rel="alternate" href="https://jiandanxinli.github.io/2016-07-30.html"/>
     <id>https://jiandanxinli.github.io/2016-07-30.html</id>
     <published>2016-07-30T08:00:00+08:00</published>
-    <updated>2016-08-11T20:51:24+08:00</updated>
+    <updated>2016-08-04T13:09:46+08:00</updated>
     <author>
       <name>Ben</name>
     </author>
@@ -2653,13 +3652,13 @@ For customising the slider appearance see the &lt;span class="p"&gt;[&lt;/span&g
     <link rel="alternate" href="https://jiandanxinli.github.io/2016-07-29.html"/>
     <id>https://jiandanxinli.github.io/2016-07-29.html</id>
     <published>2016-07-29T08:00:00+08:00</published>
-    <updated>2016-08-11T20:51:24+08:00</updated>
+    <updated>2016-11-01T12:59:01+08:00</updated>
     <author>
       <name>Qiuncheng</name>
     </author>
     <content type="html">&lt;h3&gt;前言&lt;/h3&gt;
 
-&lt;p&gt;见过很多的iOS应用，都有无限轮播图，之前也看到过很多相关实现的文章，可是仅仅就是一看而过罢了。当自己在项目中用到这个，真正去写的时候才发现不是很容易，遇到了一些问题，这篇文章就记录下自己最后成功实现轮播图的历程。&lt;/p&gt;
+&lt;p&gt;见过很多的iOS应用，都有无限轮播图，之前也看到过相关实现的文章，可是仅仅就是一看而过罢了。当自己在项目中用到这个，真正去写的时候才发现不是很容易，遇到了一些问题，这篇文章就记录下自己最后成功实现轮播图的历程。&lt;/p&gt;
 
 &lt;h3&gt;原理&lt;/h3&gt;
 
@@ -2676,7 +3675,7 @@ For customising the slider appearance see the &lt;span class="p"&gt;[&lt;/span&g
 
 &lt;h4&gt;原理二：利用&lt;code&gt;UICollectionView&lt;/code&gt;实现轮播图。&lt;/h4&gt;
 
-&lt;p&gt;你当然可以利用&lt;strong&gt;原理一&lt;/strong&gt;再用&lt;code&gt;UICollectionView&lt;/code&gt;实现一次。但是我这里采用一种偷懒的方式，利用&lt;code&gt;UICollectionView&lt;/code&gt;的cell重用机制。创建个无数个cell，比如3x20000。当用户第一次进来的我们就将UICollectionView滑到3x20000x0.5的位置。然后利用&lt;code&gt;cell.indexPath.item % 3&lt;/code&gt;来对cell上的UIImageView进行image显示。这种方式比较偷懒，在后来添加NSTimer自动轮播和点击事件的时候也比较简单，不过有点大炮打小鸟的感觉。所以我在这里也只是介绍下原理，如果你有兴趣，可以自己尝试去实现下。而且UICollectionView自带一个方法&lt;code&gt;- scrollToItemAtIndexPath:atScrollPosition:animated:&lt;/code&gt;还比较厉害。&lt;/p&gt;
+&lt;p&gt;你当然可以利用&lt;strong&gt;原理一&lt;/strong&gt;再用&lt;code&gt;UICollectionView&lt;/code&gt;实现一次。但是我这里采用一种偷懒的方式，利用&lt;code&gt;UICollectionView&lt;/code&gt;的cell重用机制。创建个无数个cell，比如3x20000。当用户第一次进来的我们就将UICollectionView滑到3x20000x0.5的位置。然后利用&lt;code&gt;cell.indexPath.item % 3&lt;/code&gt;来对cell上的UIImageView进行image显示。这种方式比较偷懒，在后来添加NSTimer自动轮播和点击事件的时候也比较简单，不过有点大炮打小鸟的感觉。所以我在这里也只是介绍下原理，如果你有兴趣，可以自己尝试去实现下。而且UICollectionView自带一个方法&lt;code&gt;- scrollToItemAtIndexPath:atScrollPosition:animated:&lt;/code&gt;还比较实用。&lt;/p&gt;
 
 &lt;h3&gt;具体实现&lt;/h3&gt;
 
@@ -2778,7 +3777,8 @@ lazy var scrollView: UIScrollView = {
        }
        /// 这里设置的滚动间隔为2秒
        timer = NSTimer.scheduledTimerWithTimeInterval(2, target: self, selector: #selector(autoScroll), userInfo: nil, repeats: true)
-       NSRunLoop.currentRunLoop().addTimer(timer!, forMode: NSDefaultRunLoopMode)
+       NSRunLoop.currentRunLoop().addTimer(timer!, forMode: NSEventTrackingRunLoopMode)
+       /// 这里使用了NSEventTrackingRunLoopMode模式，避免页面滚动时timer会停掉。
    }
    private func stopTimer() {
        timer?.invalidate()
@@ -2787,8 +3787,9 @@ lazy var scrollView: UIScrollView = {
    func autoScroll() {
        if i == imageNames.count + 1 {
            i = 1
+       } else {
+           i += 1
        }
-       i += 1
        /// 在处理无限轮番的时候设置contentOffset没有添加animated，这里要添加上来，不然有种很突兀的感觉。
        scrollView.setContentOffset(CGPoint(x: self.width * CGFloat(i), y: 0), animated: true)
    }
@@ -2807,7 +3808,8 @@ lazy var scrollView: UIScrollView = {
 
 &lt;h3&gt;结尾&lt;/h3&gt;
 
-&lt;p&gt;还是比较简单的。但是我这个复用性比较差，封装的也不好，可是具体要看思路😂。代码实现放在了Github Wiki上了&lt;a href="https://github.com/qiuncheng/qiuncheng.github.io/wiki/BannerView.Swift"&gt;BannerView.Swift&lt;/a&gt;，由于工程量太小，就没将工程文件上传了。&lt;/p&gt;
+&lt;p&gt;我这里使用了代码来布局，当然你也可以使用Xib或者Storyboard来弄，
+还是比较简单的。但是我这个复用性比较差，封装的也不好，可是具体要看思路😂。代码实现放在了Github Wiki上了&lt;a href="https://github.com/qiuncheng/qiuncheng.github.io/wiki/BannerView.Swift"&gt;BannerView.Swift&lt;/a&gt;，由于工程量太小，就没将工程文件上传了。&lt;/p&gt;
 
 &lt;h4&gt;关于作者&lt;/h4&gt;
 
@@ -2819,7 +3821,7 @@ lazy var scrollView: UIScrollView = {
     <link rel="alternate" href="https://jiandanxinli.github.io/2015-09-08.html"/>
     <id>https://jiandanxinli.github.io/2015-09-08.html</id>
     <published>2015-09-08T08:00:00+08:00</published>
-    <updated>2016-08-11T20:44:27+08:00</updated>
+    <updated>2016-07-27T11:40:16+08:00</updated>
     <author>
       <name>Ben</name>
     </author>
@@ -3012,7 +4014,7 @@ app/views/pages/home.html+mobile.erb # 文件名格式为 响应格式+设备名
     <link rel="alternate" href="https://jiandanxinli.github.io/2014-07-23.html"/>
     <id>https://jiandanxinli.github.io/2014-07-23.html</id>
     <published>2014-07-23T08:00:00+08:00</published>
-    <updated>2016-08-11T20:51:24+08:00</updated>
+    <updated>2016-08-08T10:12:51+08:00</updated>
     <author>
       <name>韩冰</name>
     </author>
